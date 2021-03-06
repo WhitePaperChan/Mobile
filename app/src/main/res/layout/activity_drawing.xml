@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".DrawingActivity">
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/tab1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:icon="@android:drawable/btn_star"
+            android:text="Про автора" />
+
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/tab2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:icon="@android:drawable/ic_menu_edit"
+            android:text="Малювання" />
+
+    </com.google.android.material.tabs.TabLayout>
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabsDrawing"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/TabDrawing1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Малюнок 1" />
+
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/TabDrawing2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Малюнок 2" />
+
+    </com.google.android.material.tabs.TabLayout>
+
+    <ua.kpi.comsys.IV8209.DrawingView
+        style="@style/Widget.Theme.MyApplication.MyView"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:paddingStart="20dp"
+        android:paddingLeft="20dp"
+        android:paddingTop="40dp"
+        android:paddingRight="20dp"
+        android:paddingBottom="40dp"
+        app:exampleDimension="24sp"
+        app:exampleString="Hello, DrawingView"
+        app:layout_constraintBottom_toTopOf="@+id/tabs"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.4"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tabsDrawing" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
