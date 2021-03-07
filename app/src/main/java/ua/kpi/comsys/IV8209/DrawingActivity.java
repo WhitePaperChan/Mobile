@@ -15,6 +15,7 @@ public class DrawingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_drawing);
         TabLayout tabs = findViewById(R.id.tabs);
         TabLayout tabsDrawing = findViewById(R.id.tabsDrawing);
+        DrawingView drawingView = findViewById(R.id.drawing);
         tabs.getTabAt(1).select();
         tabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener(){
 
@@ -40,7 +41,11 @@ public class DrawingActivity extends AppCompatActivity {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 if (tab.getPosition() == 0){
-                    //TODO
+                    drawingView.setNumberOfDrawing(0);
+                    drawingView.invalidate();
+                } else {
+                    drawingView.setNumberOfDrawing(1);
+                    drawingView.invalidate();
                 }
             }
 

@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.text.TextPaint;
 import android.util.AttributeSet;
@@ -21,11 +22,17 @@ public class DrawingView extends View {
     private float mExampleDimension = 0; // TODO: use a default from R.dimen...
     private Drawable mExampleDrawable;
 
+    private int mNumberOfDrawing = 0;
+
     private TextPaint mTextPaint;
     private float mTextWidth;
     private float mTextHeight;
 
-    private Paint paint = new Paint();
+    private Paint paintBlack = new Paint();
+    private Paint paintCyan = new Paint();
+    private Paint paintPurple = new Paint();
+    private Paint paintYellow = new Paint();
+    private Paint paintGray = new Paint();
 
     public DrawingView(Context context) {
         super(context);
@@ -64,7 +71,14 @@ public class DrawingView extends View {
             mExampleDrawable.setCallback(this);
         }
 
-        paint.setColor(Color.BLACK);
+        paintBlack.setColor(Color.BLACK);
+        paintCyan.setColor(Color.CYAN);
+        paintPurple.setColor(0xff6a0dad);
+        paintYellow.setColor(Color.YELLOW);
+        paintGray.setColor(Color.GRAY);
+
+        paintBlack.setStrokeWidth(5);
+        paintPurple.setStrokeWidth(5);
 
         a.recycle();
 
@@ -100,24 +114,78 @@ public class DrawingView extends View {
         int contentWidth = getWidth() - paddingLeft - paddingRight;
         int contentHeight = getHeight() - paddingTop - paddingBottom;
 
-        int n = 50;
-        float xPast = 0;
-        float yPast = 0;
-        for (int i=0; i < n; i++){
-            float y = contentHeight - (float)(Math.cos(Math.PI * (2 * (double)i / (n - 1) - 1)) + 1) * contentHeight / 2;
-            float x = (float) i / (n - 1) * contentWidth;
-            if (i == 0) {
-                xPast = x;
-                yPast = y;
-                //path.moveTo((int) x, (int) y);
-            } else {
-                canvas.drawLine(xPast, yPast, x, y, paint);
-                xPast = x;
-                yPast = y;
-                //path.lineTo((int)x, (int)y);
+        if (mNumberOfDrawing == 0) {
+            int n = 50;
+            float xPast = 0;
+            float yPast = 0;
+            for (int i = 0; i < n; i++) {
+                float y = contentHeight -
+                        (float) (Math.cos(Math.PI * (2 * (double) i / (n - 1) - 1)) + 1 + 1)
+                                * contentHeight / 4 + paddingTop;
+                float x = (float) i / (n - 1) * contentWidth + paddingLeft;
+                if (i == 0) {
+                    xPast = x;
+                    yPast = y;
+                } else {
+                    canvas.drawLine(xPast, yPast, x, y, paintPurple);
+                    xPast = x;
+                    yPast = y;
+                }
             }
-        }
 
+            canvas.drawLine(0, (float) contentHeight / 2 + paddingTop,
+                    contentWidth + paddingLeft + paddingRight,
+                    (float) contentHeight / 2 + paddingTop, paintBlack);
+
+            canvas.drawLine((float) contentWidth / 2 + paddingLeft, 0,
+                    (float) contentWidth / 2 + paddingLeft,
+                    contentHeight + paddingTop + paddingBottom, paintBlack);
+
+            canvas.drawLine((float) contentWidth / 2 + paddingLeft, 0,
+                    (float) contentWidth / 2 + paddingLeft - 25, 50, paintBlack);
+
+            canvas.drawLine((float) contentWidth / 2 + paddingLeft, 0,
+                    (float) contentWidth / 2 + paddingLeft + 25, 50, paintBlack);
+
+            canvas.drawLine(contentWidth + paddingLeft + paddingRight,
+                    (float) contentHeight / 2 + paddingTop,
+                    contentWidth + paddingLeft + paddingRight - 50,
+                    (float) contentHeight / 2 + paddingTop - 25, paintBlack);
+
+            canvas.drawLine(contentWidth + paddingLeft + paddingRight,
+                    (float) contentHeight / 2 + paddingTop,
+                    contentWidth + paddingLeft + paddingRight - 50,
+                    (float) contentHeight / 2 + paddingTop + 25, paintBlack);
+        } else if (mNumberOfDrawing == 1){
+            int size = Math.min(contentWidth, contentHeight);
+            int xStart = paddingLeft + (contentWidth - size) / 2;
+            int yStart = paddingTop + (contentHeight - size) / 2;
+            RectF oval = new RectF(xStart,
+                    yStart,
+                    xStart + size, yStart + size);
+            canvas.drawArc(oval, 0F, 162F, true, paintCyan);
+            canvas.drawArc(oval, 162F, 18F, true, paintPurple);
+            canvas.drawArc(oval, 180F, 90F, true, paintYellow);
+            canvas.drawArc(oval, 270F, 90F, true, paintGray);
+        }
+    }
+
+    /**
+     * Gets the number of drawing attribute value.
+     *
+     * @return The number of drawing attribute value.
+     */
+    public int getNumberOfDrawing() {
+        return mNumberOfDrawing;
+    }
+
+    /**
+     * Sets the number of drawing attribute value.
+     *
+     * @param numberOfDrawing The number of drawing attribute value to use.
+     */
+    public void setNumberOfDrawing(int numberOfDrawing) {
+        mNumberOfDrawing = numberOfDrawing;
     }
 
     /**
