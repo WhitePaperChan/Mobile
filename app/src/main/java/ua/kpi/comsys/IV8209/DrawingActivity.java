@@ -24,6 +24,9 @@ public class DrawingActivity extends AppCompatActivity {
                 if (tab.getPosition() == 0){
                     Intent intent = new Intent(DrawingActivity.this, MainActivity.class);
                     startActivity(intent);
+                } else if (tab.getPosition() == 2) {
+                    Intent intent = new Intent(DrawingActivity.this, ListActivity.class);
+                    startActivity(intent);
                 }
             }
 
