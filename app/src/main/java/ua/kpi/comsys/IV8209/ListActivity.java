@@ -1,9 +1,16 @@
 package ua.kpi.comsys.IV8209;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
 
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -26,6 +33,7 @@ import java.util.List;
 
 public class ListActivity extends AppCompatActivity {
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,27 +65,29 @@ public class ListActivity extends AppCompatActivity {
         });
         Book[] books = this.loadBookArray();
         TableLayout table = findViewById(R.id.table);
-        //table.setColumnShrinkable(0, true);
-        //table.setColumnShrinkable(1, true);
-        //table.setStretchAllColumns(true);
-        //table.setShrinkAllColumns(true);
         TableRow[] tableRows = new TableRow[books.length];
-        TextView[] bookTitles = new TextView[books.length];
-        TextView[] bookSubtitles = new TextView[books.length];
+        TextView[] bookInfo = new TextView[books.length];
+        ImageView[] bookImages = new ImageView[books.length];
+        ConstraintLayout.LayoutParams params;
         for (int i = 0; i < books.length; i++){
             tableRows[i] = new TableRow(this);
             tableRows[i].setPadding(10, 10, 10, 10);
-            bookTitles[i] = new TextView(this);
-            bookTitles[i].setText(books[i].getTitle());
-            bookTitles[i].setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
-                    TableRow.LayoutParams.WRAP_CONTENT));
-            bookSubtitles[i] = new TextView(this);
-            bookSubtitles[i].setText(books[i].getSubtitle());
-            tableRows[i].addView(bookTitles[i]);
-            tableRows[i].addView(bookSubtitles[i]);
+            bookImages[i] = this.createBookImage(books[i]);
+            tableRows[i].addView(bookImages[i]);
+            bookInfo[i] = new TextView(this);
+            bookInfo[i].setText(
+                    books[i].getTitle() + "\n" + books[i].getSubtitle() + "\n" +
+                            books[i].getIsbn13() + "\n" + books[i].getPrice()
+            );
+            bookInfo[i].setLayoutParams(new TableRow.LayoutParams(
+                    TableRow.LayoutParams.WRAP_CONTENT,
+                    TableRow.LayoutParams.WRAP_CONTENT
+            ));
+            bookInfo[i].setPadding(10, 10, 10, 10);
+            tableRows[i].addView(bookInfo[i]);
             table.addView(tableRows[i]);
+
         }
-        //table.setShrinkAllColumns(true);
     }
 
     private Book[] loadBookArray() {
@@ -114,4 +124,25 @@ public class ListActivity extends AppCompatActivity {
         }
         return books;
     }
+
+    private ImageView createBookImage(Book book) {
+        ImageView bookImage = new ImageView(this);
+        try {
+            InputStream inputStream = getAssets().open(book.getImage());
+            Drawable drawable = Drawable.createFromStream(inputStream, null);
+            bookImage.setImageDrawable(drawable);
+        } catch (IOException e) {
+            //e.printStackTrace();
+        }
+        bookImage.setContentDescription(book.getTitle());
+        bookImage.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        bookImage.setMinimumWidth(200);
+        bookImage.setMinimumHeight(200);
+        bookImage.setLayoutParams(new TableRow.LayoutParams(
+                TableRow.LayoutParams.WRAP_CONTENT,
+                TableRow.LayoutParams.WRAP_CONTENT
+        ));
+        return bookImage;
+    }
 }
+
