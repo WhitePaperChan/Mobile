@@ -10,6 +10,12 @@ import com.google.android.material.tabs.TabLayout;
 public class DrawingActivity extends AppCompatActivity {
 
     @Override
+    protected void onSaveInstanceState(Bundle outState){
+        super.onSaveInstanceState(outState);
+        TabLayout tabsDrawing = findViewById(R.id.tabsDrawing);
+        outState.putInt("tabsDrawingState", tabsDrawing.getSelectedTabPosition());
+    }
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drawing);
@@ -17,6 +23,12 @@ public class DrawingActivity extends AppCompatActivity {
         TabLayout tabsDrawing = findViewById(R.id.tabsDrawing);
         DrawingView drawingView = findViewById(R.id.drawing);
         tabs.getTabAt(1).select();
+        if (savedInstanceState != null){
+            int tabDrawingId = savedInstanceState.getInt("tabsDrawingState");
+            tabsDrawing.getTabAt(tabDrawingId).select();
+            drawingView.setNumberOfDrawing(tabDrawingId);
+            drawingView.invalidate();
+        }
         tabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener(){
 
             @Override
