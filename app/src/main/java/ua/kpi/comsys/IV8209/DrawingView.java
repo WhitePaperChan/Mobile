@@ -6,6 +6,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.text.TextPaint;
@@ -118,6 +120,8 @@ public class DrawingView extends View {
             int n = 50;
             float xPast = 0;
             float yPast = 0;
+            paintPurple.setStyle(Paint.Style.FILL);
+            paintPurple.setStrokeWidth(5);
             for (int i = 0; i < n; i++) {
                 float y = contentHeight -
                         (float) (Math.cos(Math.PI * (2 * (double) i / (n - 1) - 1)) + 1 + 1)
@@ -163,11 +167,19 @@ public class DrawingView extends View {
             RectF oval = new RectF(xStart,
                     yStart,
                     xStart + size, yStart + size);
-            canvas.drawArc(oval, 0F, 162F, true, paintCyan);
-            canvas.drawArc(oval, 162F, 18F, true, paintPurple);
-            canvas.drawArc(oval, 180F, 90F, true, paintYellow);
-            canvas.drawArc(oval, 270F, 90F, true, paintGray);
-        }
+            paintCyan.setStyle(Paint.Style.STROKE);
+            paintPurple.setStyle(Paint.Style.STROKE);
+            paintYellow.setStyle(Paint.Style.STROKE);
+            paintGray.setStyle(Paint.Style.STROKE);
+            paintCyan.setStrokeWidth(size / 10);
+            paintPurple.setStrokeWidth(size / 10);
+            paintYellow.setStrokeWidth(size / 10);
+            paintGray.setStrokeWidth(size / 10);
+            canvas.drawArc(oval, 0F, 162F, false, paintCyan);
+            canvas.drawArc(oval, 162F, 18F, false, paintPurple);
+            canvas.drawArc(oval, 180F, 90F, false, paintYellow);
+            canvas.drawArc(oval, 270F, 90F, false, paintGray);
+          }
     }
 
     /**
