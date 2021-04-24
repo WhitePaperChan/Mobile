@@ -23,8 +23,13 @@ import android.widget.TableRow;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class GalleryActivity extends AppCompatActivity {
 
@@ -32,6 +37,21 @@ public class GalleryActivity extends AppCompatActivity {
     @SuppressLint("ResourceType")
 
     private ImageView imageViewWork;
+    ArrayList<ImageView> images = new ArrayList<ImageView>();
+    ArrayList<String> URIs = new ArrayList<String>();
+    ConstraintLayout constraintLayout;
+    ConstraintSet set = new ConstraintSet();
+
+    protected void onSaveInstanceState(Bundle outState){
+        super.onSaveInstanceState(outState);
+        String[] URIsArray = new String[URIs.size()];
+        for (int i = 0; i < URIs.size(); i++){
+            URIsArray[i] = URIs.get(i);
+        }
+        outState.putStringArray("URIs", URIsArray);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,84 +85,7 @@ public class GalleryActivity extends AppCompatActivity {
             }
         });
 
-
-        TableLayout table = findViewById(R.id.table);
-        TableRow tableRow = new TableRow(this);
-        tableRow.setLayoutParams(new ConstraintLayout.LayoutParams(
-                ConstraintLayout.LayoutParams.MATCH_PARENT,
-                ConstraintLayout.LayoutParams.WRAP_CONTENT
-        ));
-
-        ConstraintLayout constraintLayout = new ConstraintLayout(this);
-        constraintLayout.setId(View.generateViewId());
-        ConstraintSet set = new ConstraintSet();
-
-        ImageView imageView = new ImageView(this); //TODO: show image
-        createImage(imageView, "Image_01.png");
-        constraintLayout.addView(imageView, getDisplay().getWidth() / 4 * 3, getDisplay().getWidth() / 4 * 3);
-        set.clone(constraintLayout);
-        set.connect(imageView.getId(), ConstraintSet.RIGHT, constraintLayout.getId(), ConstraintSet.RIGHT);
-        set.applyTo(constraintLayout);
-
-        ImageView imageView1 = new ImageView(this); //TODO: show image
-        createImage(imageView1, "Image_02.png");
-        constraintLayout.addView(imageView1, getDisplay().getWidth() / 4, getDisplay().getWidth() / 4);
-        set.clone(constraintLayout);
-        set.connect(imageView1.getId(), ConstraintSet.RIGHT, imageView.getId(), ConstraintSet.LEFT);
-        set.applyTo(constraintLayout);
-
-        ImageView imageView2 = new ImageView(this); //TODO: show image
-        createImage(imageView2, "Image_03.png");
-        constraintLayout.addView(imageView2, getDisplay().getWidth() / 4, getDisplay().getWidth() / 4);
-        set.clone(constraintLayout);
-        set.connect(imageView2.getId(), ConstraintSet.RIGHT, imageView.getId(), ConstraintSet.LEFT);
-        set.connect(imageView2.getId(), ConstraintSet.TOP, imageView1.getId(), ConstraintSet.BOTTOM);
-        set.applyTo(constraintLayout);
-
-        ImageView imageView3 = new ImageView(this);
-        createImage(imageView3, "Image_05.png");
-        constraintLayout.addView(imageView3, getDisplay().getWidth() / 4, getDisplay().getWidth() / 4);
-        set.clone(constraintLayout);
-        set.connect(imageView3.getId(), ConstraintSet.RIGHT, imageView.getId(), ConstraintSet.LEFT);
-        set.connect(imageView3.getId(), ConstraintSet.TOP, imageView2.getId(), ConstraintSet.BOTTOM);
-        set.applyTo(constraintLayout);
-
-        ImageView imageView4 = new ImageView(this);
-        createImage(imageView4, "Image_06.png");
-        constraintLayout.addView(imageView4, getDisplay().getWidth() / 4, getDisplay().getWidth() / 4);
-        set.clone(constraintLayout);
-        set.connect(imageView4.getId(), ConstraintSet.TOP, imageView.getId(), ConstraintSet.BOTTOM);
-        set.applyTo(constraintLayout);
-
-        ImageView imageView5 = new ImageView(this);
-        createImage(imageView5, "Image_07.png");
-        constraintLayout.addView(imageView5, getDisplay().getWidth() / 4, getDisplay().getWidth() / 4);
-        set.clone(constraintLayout);
-        set.connect(imageView5.getId(), ConstraintSet.LEFT, imageView4.getId(), ConstraintSet.RIGHT);
-        set.connect(imageView5.getId(), ConstraintSet.TOP, imageView.getId(), ConstraintSet.BOTTOM);
-        set.applyTo(constraintLayout);
-
-        ImageView imageView6 = new ImageView(this);
-        createImage(imageView6, "Image_08.png");
-        constraintLayout.addView(imageView6, getDisplay().getWidth() / 4, getDisplay().getWidth() / 4);
-        set.clone(constraintLayout);
-        set.connect(imageView6.getId(), ConstraintSet.LEFT, imageView5.getId(), ConstraintSet.RIGHT);
-        set.connect(imageView6.getId(), ConstraintSet.TOP, imageView.getId(), ConstraintSet.BOTTOM);
-        set.applyTo(constraintLayout);
-
-        ImageView imageView7 = new ImageView(this);
-        createImage(imageView7, "Image_10.png");
-        constraintLayout.addView(imageView7, getDisplay().getWidth() / 4, getDisplay().getWidth() / 4);
-        set.clone(constraintLayout);
-        set.connect(imageView7.getId(), ConstraintSet.LEFT, imageView6.getId(), ConstraintSet.RIGHT);
-        set.connect(imageView7.getId(), ConstraintSet.TOP, imageView.getId(), ConstraintSet.BOTTOM);
-        set.applyTo(constraintLayout);
-
-        tableRow.addView(constraintLayout);
-
-        table.addView(tableRow);
-
-        imageViewWork = imageView;
+        constraintLayout = findViewById(R.id.constraint);
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener(){
@@ -152,6 +95,12 @@ public class GalleryActivity extends AppCompatActivity {
                 startActivityForResult(intent, 1);
             }
         });
+
+        if (savedInstanceState != null){
+            String[] URIsList = savedInstanceState.getStringArray("URIs");
+            URIs.addAll(Arrays.asList(URIsList));
+            drawFromArray(URIsList);
+        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -161,24 +110,53 @@ public class GalleryActivity extends AppCompatActivity {
         if (resultCode != RESULT_CANCELED && requestCode == 1) {
             if (resultCode == RESULT_OK && data != null) {
                 Uri selectedImage = data.getData();
-                imageViewWork.setImageURI(selectedImage);
+                URIs.add(selectedImage.toString());
+                drawFromUri(selectedImage);
             }
         }
     }
 
-    void createImage(ImageView imageView, String filename){
-        try {
-            InputStream inputStream = getAssets().open(filename);
-            Drawable drawable = Drawable.createFromStream(inputStream, null);
-            imageView.setImageDrawable(drawable);
-        } catch (IOException e) {
+    private void drawFromArray(String[] URIs){
+        for (String i : URIs){
+            Uri uri = Uri.parse(i);
+            drawFromUri(uri);
         }
-        imageView.setContentDescription("sample");
-        imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        imageView.setLayoutParams(new TableRow.LayoutParams(
-                TableRow.LayoutParams.MATCH_PARENT,
-                TableRow.LayoutParams.WRAP_CONTENT
-        ));
-        imageView.setId(View.generateViewId());
+    }
+
+    private void drawFromUri(Uri selectedImage){
+        images.add(new ImageView(this));
+        int size = images.size();
+        ImageView image = images.get(size - 1);
+        image.setImageURI(selectedImage);
+        image.setId(View.generateViewId());
+        if (size % 8 == 1){
+            constraintLayout.addView(image, getDisplay().getWidth() / 4, getDisplay().getWidth() / 4);
+            set.clone(constraintLayout);
+            if (size > 8){
+                set.connect(image.getId(), ConstraintSet.TOP, images.get(size - 2).getId(), ConstraintSet.BOTTOM);}
+        }
+        if (size % 8 == 2){
+            constraintLayout.addView(image, getDisplay().getWidth() * 3 / 4, getDisplay().getWidth() * 3 / 4);
+            set.clone(constraintLayout);
+            set.connect(image.getId(), ConstraintSet.LEFT, images.get(size - 2).getId(), ConstraintSet.RIGHT);
+            set.connect(image.getId(), ConstraintSet.TOP, images.get(size - 2).getId(), ConstraintSet.TOP);
+        }
+        if (size % 8 == 3){
+            constraintLayout.addView(image, getDisplay().getWidth() / 4, getDisplay().getWidth() / 4);
+            set.clone(constraintLayout);
+            set.connect(image.getId(), ConstraintSet.TOP, images.get(size - 3).getId(), ConstraintSet.BOTTOM);
+        }
+        if (size % 8 == 4 || size % 8 == 5){
+            constraintLayout.addView(image, getDisplay().getWidth() / 4, getDisplay().getWidth() / 4);
+            set.clone(constraintLayout);
+            set.connect(image.getId(), ConstraintSet.TOP, images.get(size - 2).getId(), ConstraintSet.BOTTOM);
+        }
+        if (size % 8 == 0 || size % 8 >= 6){
+            constraintLayout.addView(image, getDisplay().getWidth() / 4, getDisplay().getWidth() / 4);
+            set.clone(constraintLayout);
+            set.connect(image.getId(), ConstraintSet.TOP, images.get(size - 2).getId(), ConstraintSet.TOP);
+            set.connect(image.getId(), ConstraintSet.LEFT, images.get(size - 2).getId(), ConstraintSet.RIGHT);
+        }
+        set.applyTo(constraintLayout);
     }
 }
