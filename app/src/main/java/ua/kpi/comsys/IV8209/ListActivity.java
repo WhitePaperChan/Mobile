@@ -5,13 +5,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -21,12 +26,26 @@ import com.google.android.material.tabs.TabLayout;
 import org.json.*;
 import java.io.IOException;
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+
 public class ListActivity extends AppCompatActivity {
+
+    String jsonBooksLoadedString;
+    ArrayList<Book> booksFiltered;
+    TableRow[] tableRows;
+    ImageView[] bookImages;
+    TextView[] bookInfo;
+    Drawable[] drawables;
+    TableLayout table;
+    ProgressBar progressBar;
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
@@ -62,14 +81,12 @@ public class ListActivity extends AppCompatActivity {
             }
         });
         ArrayList<Book> books = new ArrayList<Book>();
-        Collections.addAll(books, this.loadBookArray());
-        TableLayout table = findViewById(R.id.table);
-        TableRow[] tableRows = new TableRow[books.size()];
-        TextView[] bookInfo = new TextView[books.size()];
-        ImageView[] bookImages = new ImageView[books.size()];
+        //Collections.addAll(books, this.loadBookArray());
+        table = findViewById(R.id.table);
+        progressBar = findViewById(R.id.progressBar);
         ConstraintLayout.LayoutParams params;
 
-        this.redrawTable(books, tableRows, bookImages, bookInfo, table, books);
+        //this.redrawTable(books, tableRows, bookImages, bookInfo, table, books);
 
         SearchView search = findViewById(R.id.search);
         search.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -80,7 +97,14 @@ public class ListActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                ArrayList<Book> booksFiltered = new ArrayList<Book>();
+                booksFiltered = new ArrayList<Book>();
+                if (newText.length() >= 3){
+                    JsonTask task = new JsonTask();
+                    task.execute(newText);
+                } else {
+                    table.removeAllViews();
+                }
+                /*
                 table.removeAllViews();
                 int j = 0;
                 if (!newText.isEmpty()) {
@@ -89,23 +113,136 @@ public class ListActivity extends AppCompatActivity {
                             booksFiltered.add(books.get(i));
                             j++;
                         }
-                    }
-                    redrawTable(booksFiltered, tableRows, bookImages, bookInfo, table, books);
-                } else {
-                    redrawTable(books, tableRows, bookImages, bookInfo, table, books);
-                }
+                    }*/
+                    //redrawTable(booksFiltered, tableRows, bookImages, bookInfo, table, books);
+                //} else {
+                    //redrawTable(books, tableRows, bookImages, bookInfo, table, books);
+                //}
                 return false;
             }
-        });
+        });//https://api.itbook.store/1.0/search/Android
 
-        FloatingActionButton fab = findViewById(R.id.fab);
+        /*FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(ListActivity.this, AddBookActivity.class);
                 startActivity(intent);
             }
-        });
+        });*/
+        //String url = "https://api.itbook.store/1.0/search/Android";
+        //new JsonTask().execute("Android");
+        //new JsonTask().execute("iOS");
+    }
+
+    private class JsonTask extends AsyncTask<String, Void, String> {
+
+        ProgressDialog pd;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressBar.setVisibility(View.VISIBLE);
+            //pd = new ProgressDialog(ListActivity.this);
+            //pd.setMessage("Please wait");
+            //pd.setCancelable(false);
+            //pd.show();
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            HttpURLConnection connection = null;
+            BufferedReader reader = null;
+            try {
+                URL url = new URL("https://api.itbook.store/1.0/search/" + params[0]);//(params[0]);
+                connection = (HttpURLConnection) url.openConnection();
+                connection.connect();
+                InputStream stream = connection.getInputStream();
+                reader = new BufferedReader(new InputStreamReader(stream));
+                StringBuffer buffer = new StringBuffer();
+                String line = "";
+
+                while ((line = reader.readLine()) != null){
+                    buffer.append(line+"\n");
+                }
+                connection.disconnect();
+                try {
+                    JSONObject jsonBooksLoadedObject = new JSONObject(buffer.toString());
+                    JSONArray jsonBooksLoadedArray = jsonBooksLoadedObject.getJSONArray("books");
+                    drawables = new Drawable[jsonBooksLoadedArray.length()];
+                    for (int i = 0; i < jsonBooksLoadedArray.length(); i++){
+                        JSONObject book = jsonBooksLoadedArray.getJSONObject(i);
+                        booksFiltered.add(new Book(
+                                book.getString("title"),
+                                book.getString("subtitle"),
+                                book.getString("isbn13"),
+                                book.getString("price"),
+                                book.getString("image")
+                        ));
+                        url = new URL(book.getString("image"));
+                        connection = (HttpURLConnection) url.openConnection();
+                        connection.connect();
+                        drawables[i] = Drawable.createFromStream(connection.getInputStream(), null);
+                        connection.disconnect();
+                        //System.out.println(jsonBooksLoadedArray.getJSONObject(i));
+                    }
+                    System.out.println(booksFiltered);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return buffer.toString();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (connection != null){
+                    connection.disconnect();
+                }
+                try {
+                    if (reader != null){
+                        reader.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return null;
+        }
+
+        @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+        @Override
+        protected void onPostExecute(String result){
+            super.onPostExecute(result);
+            //if (pd.isShowing()){
+            //    pd.dismiss();
+            //}
+            jsonBooksLoadedString = result;
+            System.out.println(jsonBooksLoadedString);
+            /*try {
+                JSONObject jsonBooksLoadedObject = new JSONObject(jsonBooksLoadedString);
+                JSONArray jsonBooksLoadedArray = jsonBooksLoadedObject.getJSONArray("books");
+                for (int i = 0; i < jsonBooksLoadedArray.length(); i++){
+                    JSONObject book = jsonBooksLoadedArray.getJSONObject(i);
+                    booksFiltered.add(new Book(
+                            book.getString("title"),
+                            book.getString("subtitle"),
+                            book.getString("isbn13"),
+                            book.getString("price"),
+                            book.getString("image")
+                    ));
+                    //System.out.println(jsonBooksLoadedArray.getJSONObject(i));
+                }
+                System.out.println(booksFiltered);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }*/
+            tableRows = new TableRow[booksFiltered.size()];
+            bookInfo = new TextView[booksFiltered.size()];
+            bookImages = new ImageView[booksFiltered.size()];
+            redrawTable(booksFiltered, tableRows, bookImages, bookInfo, table, booksFiltered);
+            progressBar.setVisibility(View.GONE);
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -113,9 +250,17 @@ public class ListActivity extends AppCompatActivity {
             ArrayList<Book> booksArrayFiltered, TableRow[] tableRows, ImageView[] bookImages, TextView[] bookInfo,
             TableLayout table, ArrayList<Book> booksArrayUnfiltered
     ){
+        table.removeAllViews();
         tableRows = new TableRow[booksArrayFiltered.size()];
         bookInfo = new TextView[booksArrayFiltered.size()];
         bookImages = new ImageView[booksArrayFiltered.size()];
+        Drawable[] drawables = new Drawable[booksArrayFiltered.size()];
+        if (this.drawables != null) {
+            for (int i = 0; i < this.drawables.length; i++) {
+                System.out.println(drawables.length + "" + this.drawables.length);
+                drawables[i] = this.drawables[i];
+            }
+        }
         List<String> bookFiles = null;
         try {
             bookFiles = Arrays.asList(getAssets().list(""));
@@ -125,7 +270,9 @@ public class ListActivity extends AppCompatActivity {
         for (int i = 0; i < booksArrayFiltered.size(); i++) {
             tableRows[i] = new TableRow(this);
             tableRows[i].setPadding(10, 10, 10, 10);
-            bookImages[i] = this.createBookImage(booksArrayFiltered.get(i));
+            System.out.println(booksArrayFiltered.get(i));
+            System.out.println(drawables[i]);
+            bookImages[i] = this.createBookImage(booksArrayFiltered.get(i), drawables[i]);
             tableRows[i].addView(bookImages[i]);
             bookInfo[i] = new TextView(this);
             bookInfo[i].setText(
@@ -166,13 +313,13 @@ public class ListActivity extends AppCompatActivity {
         //}
         table.addView(tableRows[i]);
         }
-        if (booksArrayFiltered.isEmpty()){
+        /*if (booksArrayFiltered.isEmpty()){
             TableRow tableRowNoBooks = new TableRow(this);
             TextView textViewNoBooks = new TextView(this);
             textViewNoBooks.setText("Книг не знайдено");
             tableRowNoBooks.addView(textViewNoBooks);
             table.addView(tableRowNoBooks);
-        }
+        }*/
     }
 
     private Book[] loadBookArray() {
@@ -223,14 +370,11 @@ public class ListActivity extends AppCompatActivity {
         return books;
     }
 
-    private ImageView createBookImage(Book book) {
-        ImageView bookImage = new ImageView(this);
-        try {
-            InputStream inputStream = getAssets().open(book.getImage());
-            Drawable drawable = Drawable.createFromStream(inputStream, null);
-            bookImage.setImageDrawable(drawable);
-        } catch (IOException e) {
-        }
+    private ImageView createBookImage(Book book, Drawable drawable) {
+    ImageView bookImage = new ImageView(this);
+        //InputStream inputStream = getAssets().open(book.getImage());
+        //Drawable drawable = Drawable.createFromStream(inputStream, null);
+        bookImage.setImageDrawable(drawable);
         bookImage.setContentDescription(book.getTitle());
         bookImage.setScaleType(ImageView.ScaleType.FIT_CENTER);
         bookImage.setMinimumWidth(200);
