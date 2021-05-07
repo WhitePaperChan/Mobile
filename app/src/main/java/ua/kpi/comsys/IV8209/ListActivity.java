@@ -288,28 +288,19 @@ public class ListActivity extends AppCompatActivity {
             String isbn13 = booksArrayFiltered.get(i).getIsbn13();
             TableRow tableRow = tableRows[i];
             Book book = booksArrayFiltered.get(i);
-            if (bookFiles.contains(isbn13 + ".txt")) {
-                tableRows[i].setOnTouchListener(new OnSwipeTouchListener(ListActivity.this) {
-                    @Override
-                    public void onClick() {
-                        Intent intent = new Intent(ListActivity.this, BookInfoActivity.class);
-                        intent.putExtra("id", isbn13);
-                        startActivity(intent);
-                    }
+            tableRows[i].setOnTouchListener(new OnSwipeTouchListener(ListActivity.this) {
+                @Override
+                public void onClick() {
+                    Intent intent = new Intent(ListActivity.this, BookInfoActivity.class);
+                    intent.putExtra("id", isbn13);
+                    startActivity(intent);
+                }
 
-                    @Override
-                    public void onSwipeLeft() {
-                        swipeLeftMethod(table, tableRow, booksArrayUnfiltered, booksArrayFiltered, book);
-                    }
-                });
-            } else {
-                tableRows[i].setOnTouchListener(new OnSwipeTouchListener(ListActivity.this) {
-                    @Override
-                    public void onSwipeLeft() {
-                        swipeLeftMethod(table, tableRow, booksArrayUnfiltered, booksArrayFiltered, book);
-                    }
-                });
-            }
+                @Override
+                public void onSwipeLeft() {
+                    swipeLeftMethod(table, tableRow, booksArrayUnfiltered, booksArrayFiltered, book);
+                }
+            });
         //}
         table.addView(tableRows[i]);
         }
