@@ -77,7 +77,7 @@ public class BookInfoActivity extends AppCompatActivity {
             HttpURLConnection connection = null;
             BufferedReader reader = null;
             try {
-                URL url = new URL("https://api.itbook.store/1.0/books/" + params[0]);//(params[0]);
+                URL url = new URL("https://api.itbook.store/1.0/books/" + params[0]);
                 connection = (HttpURLConnection) url.openConnection();
                 connection.connect();
                 InputStream stream = connection.getInputStream();

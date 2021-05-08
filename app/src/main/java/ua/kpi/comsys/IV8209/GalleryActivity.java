@@ -6,27 +6,15 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 
 import android.annotation.SuppressLint;
-import android.app.DownloadManager;
 import android.content.Intent;
-import android.database.Cursor;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.view.View;
-import android.view.textclassifier.ConversationActions;
-import android.view.textclassifier.TextClassification;
-import android.view.textclassifier.TextLinks;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.TableLayout;
-import android.widget.TableRow;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 
 import org.json.JSONArray;
@@ -41,14 +29,11 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class GalleryActivity extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @SuppressLint("ResourceType")
-
-    private ImageView imageViewWork;
     ArrayList<ImageView> images = new ArrayList<ImageView>();
     ArrayList<String> URIs = new ArrayList<String>();
     Drawable[] drawables;
@@ -104,21 +89,6 @@ public class GalleryActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
 
         new JsonTask().execute();
-
-        /*FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                startActivityForResult(intent, 1);
-            }
-        });*/
-
-        /*if (savedInstanceState != null){
-            String[] URIsList = savedInstanceState.getStringArray("URIs");
-            URIs.addAll(Arrays.asList(URIsList));
-            drawFromArray(URIsList);
-        }*/
     }
 
     private class JsonTask extends AsyncTask<String, Void, String> {
@@ -135,10 +105,11 @@ public class GalleryActivity extends AppCompatActivity {
             HttpURLConnection connection = null;
             BufferedReader reader = null;
             try {
-                URL url = new URL("https://pixabay.com/api/?key=19193969-87191e5db266905fe8936d565&q=hot+summer&image_type=photo&per_page=24");//(params[0]);
+                URL url = new URL(
+                        "https://pixabay.com/api/?key=19193969-87191e5db266905fe8936d565&q=hot+summer&image_type=photo&per_page=24"
+                );
 
                 connection = (HttpURLConnection) url.openConnection();
-                //connection.connect();
                 InputStream stream = connection.getInputStream();
                 reader = new BufferedReader(new InputStreamReader(stream));
                 StringBuffer buffer = new StringBuffer();
@@ -148,11 +119,9 @@ public class GalleryActivity extends AppCompatActivity {
                     buffer.append(line+"\n");
                 }
                 connection.disconnect();
-                System.out.println(buffer.toString());
                 try {
                     JSONObject jsonResult = new JSONObject(buffer.toString());
                     JSONArray jsonImageArray = jsonResult.getJSONArray("hits");
-                    System.out.println(jsonImageArray);
                     drawables = new Drawable[jsonImageArray.length()];
                     for (int i = 0; i < jsonImageArray.length(); i++){
                         URL urlImage = new URL(jsonImageArray.getJSONObject(i).getString("previewURL"));
@@ -160,9 +129,7 @@ public class GalleryActivity extends AppCompatActivity {
                         connection.connect();
                         drawables[i] = Drawable.createFromStream(connection.getInputStream(), null);
                         connection.disconnect();
-                        //URIs.add(jsonImageArray.getJSONObject(i).getString("previewURL"));
                     }
-                    System.out.println(URIs);
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -187,6 +154,7 @@ public class GalleryActivity extends AppCompatActivity {
             return null;
         }
 
+        @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
         @Override
         protected void onPostExecute(String result){
             super.onPostExecute(result);
