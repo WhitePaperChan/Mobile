@@ -99,6 +99,12 @@ public class ListActivity extends AppCompatActivity {
             public boolean onQueryTextChange(String newText) {
                 booksFiltered = new ArrayList<Book>();
                 if (newText.length() >= 3){
+                    for (char i : newText.toCharArray()){
+                        if (!Character.isLetterOrDigit(i)){
+                            drawInfoAboutIllegalCharacter(i);
+                            return false;
+                        }
+                    }
                     JsonTask task = new JsonTask();
                     task.execute(newText);
                 } else {
@@ -133,6 +139,15 @@ public class ListActivity extends AppCompatActivity {
         //String url = "https://api.itbook.store/1.0/search/Android";
         //new JsonTask().execute("Android");
         //new JsonTask().execute("iOS");
+    }
+
+    private void drawInfoAboutIllegalCharacter(char i){
+        table.removeAllViews();
+        TableRow tableRowNoBooks = new TableRow(this);
+        TextView textViewNoBooks = new TextView(this);
+        textViewNoBooks.setText("Illegal character (" + i + "). Use only latin letters and digits.");
+        tableRowNoBooks.addView(textViewNoBooks);
+        table.addView(tableRowNoBooks);
     }
 
     private class JsonTask extends AsyncTask<String, Void, String> {
@@ -256,7 +271,7 @@ public class ListActivity extends AppCompatActivity {
         bookImages = new ImageView[booksArrayFiltered.size()];
         Drawable[] drawables = new Drawable[booksArrayFiltered.size()];
         if (this.drawables != null) {
-            for (int i = 0; i < this.drawables.length; i++) {
+            for (int i = 0; i < Math.min(this.drawables.length, drawables.length); i++) {
                 System.out.println(drawables.length + "" + this.drawables.length);
                 drawables[i] = this.drawables[i];
             }
